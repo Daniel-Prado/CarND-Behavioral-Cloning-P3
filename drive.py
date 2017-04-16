@@ -22,6 +22,7 @@ model = None
 prev_image_array = None
 
 
+
 class SimplePIController:
     def __init__(self, Kp, Ki):
         self.Kp = Kp
@@ -44,12 +45,20 @@ class SimplePIController:
 
 
 controller = SimplePIController(0.1, 0.002)
-set_speed = 9
+set_speed = 20
 controller.set_desired(set_speed)
 
+global iteraciones, start, lap
+iteraciones = 0
+start =0
+lap=0
+
+from preprocess import perspective_transform, normalize_mean_std
+import time
 
 @sio.on('telemetry')
 def telemetry(sid, data):
+
     if data:
         # The current steering angle of the car
         steering_angle = data["steering_angle"]
@@ -61,12 +70,29 @@ def telemetry(sid, data):
         imgString = data["image"]
         image = Image.open(BytesIO(base64.b64decode(imgString)))
         image_array = np.asarray(image)
+
+        ### PRE-PROCESSING BEFORE KERAS MODEL
+        image_array = perspective_transform(image_array)
+        image_array = normalize_mean_std(image_array)
+        #####################################
+
         steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1))
 
         throttle = controller.update(float(speed))
 
+        global iteraciones
+        global start, lap
+        if(iteraciones == 0):
+            start = time.time()
+        if(iteraciones%100 == 0):
+            lap = time.time()
+            print(lap-start, "seconds for 100 iters")
+            start = lap
+        iteraciones +=1
+
         print(steering_angle, throttle)
         send_control(steering_angle, throttle)
+
 
         # save frame
         if args.image_folder != '':

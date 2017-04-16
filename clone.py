@@ -1,12 +1,13 @@
 import csv
 import numpy as np
+import cv2
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Lambda, Cropping2D
 from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
 
 lines = []
-with open('~/TRAIN_CAR/driving_log.csv') as csvfile:
+with open('../TRAIN_CAR/driving_log.csv') as csvfile:
 	reader = csv.reader(csvfile)
 	for line in reader:
 		lines.append(line)
@@ -20,6 +21,10 @@ for line in lines:
 	filename = source_path.split('/')[-1]
 	current_path = '../TRAIN_CAR/IMG/' + filename
 	image = cv2.imread(current_path)
+
+
+
+
 	images.append(image)
 	#Get the steering value from column 3
 	measurement = float(line[3]) 
@@ -36,17 +41,17 @@ X_train = np.array(augmented_images)
 y_train = np.array(augmented_measurements)
 
 ###LENET Model
-model = Sequential()
-model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=[160,320,3]))
-model.add(Cropping2D(cropping=((70,25),(0,0))))
-model.add(Convolution2D(6,5,5,activation="relu"))
-model.add(MaxPooling2D())
-model.add(Convolution2D(6,5,5,activation="relu"))
-model.add(MaxPooling2D())
-model.add(Flatten())
-model.add(Dense(120))
-model.add(Dense(84))
-model.add(Dense(1))
+#model = Sequential()
+#model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=[160,320,3]))
+#model.add(Cropping2D(cropping=((70,25),(0,0))))
+#model.add(Convolution2D(6,5,5,activation="relu"))
+#model.add(MaxPooling2D())
+#model.add(Convolution2D(6,5,5,activation="relu"))
+#model.add(MaxPooling2D())
+#model.add(Flatten())
+#odel.add(Dense(120))
+#model.add(Dense(84))
+#model.add(Dense(1))
 ###End of LeNet model
 
 ### NVIDIA Model
