@@ -15,6 +15,8 @@ with open('../TRAIN_CAR/driving_log.csv') as csvfile:
 images = []
 measurements = []
 
+from preprocess import perspective_transform, normalize_mean_std
+
 for line in lines:
 	#Get the central image path from column 0
 	source_path = line[0]
@@ -22,25 +24,7 @@ for line in lines:
 	current_path = '../TRAIN_CAR/IMG/' + filename
 	image = cv2.imread(current_path)
 
-	pts1 = np.float32([[90,65],[230,65],[-160,160],[480,160]])
-	pts2 = np.float32([[0,0],[320,0],[0,240],[320,240]])
-	M = cv2.getPerspectiveTransform(pts1,pts2)
-	dst = cv2.warpPerspective(image,M,(320,160))
-	image = dst
-	image = cv2.resize(image,(120,120), interpolation = cv2.INTER_CUBIC)
-
-	#image[0] = cv2.equalizeHist(image[0])
-	#image[1] = cv2.equalizeHist(image[1])
-	#image[2] = cv2.equalizeHist(image[2])
-
-	image = image.astype('float64')
-
-#	for channel in range(3):
-#		image[:,:,channel] -= np.mean(image[:,:,channel])
-#		image[:,:,channel] /= np.std(image[:,:,channel])
-
-	image -= np.mean(image)
-	image /= np.std(image)
+	image = perspective_transform(image, (160,160))
 
 	images.append(image)
 	#Get the steering value from column 3
@@ -77,7 +61,7 @@ y_train = np.array(augmented_measurements)
 model = Sequential()
 #model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=[120,120,3]))
 #model.add(Cropping2D(cropping=((70,25),(0,0))))
-model.add(Convolution2D(24,5,5,subsample=(2,2),activation="relu", input_shape=[120,120,3]))
+model.add(Convolution2D(24,5,5,subsample=(2,2),activation="relu", input_shape=[160,160,3]))
 #model.add(Convolution2D(24,5,5,subsample=(2,2),activation="relu"))
 model.add(Convolution2D(36,5,5,subsample=(2,2),activation="relu"))
 model.add(Convolution2D(48,5,5,subsample=(2,2),activation="relu"))
@@ -95,7 +79,7 @@ model.add(Dense(1))
 model.compile(loss='mse', optimizer='adam')
 model.fit(X_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=5)
 
-model.save('model_NVidia_Perspective_NormStd3.h5')
+model.save('model_data_NVidia_Perspective160x160.h5')
 
 
 

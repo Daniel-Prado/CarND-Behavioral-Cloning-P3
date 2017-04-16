@@ -10,7 +10,7 @@ def perspective_transform(img, resize=(320,160)):
 	pts2 = np.float32([[0,0],[320,0],[0,240],[320,240]])
 	M = cv2.getPerspectiveTransform(pts1,pts2)
 	dst = cv2.warpPerspective(img,M,(320,160))
-	dst = cv2.resize(dst,(120,120), interpolation = cv2.INTER_CUBIC)
+	dst = cv2.resize(dst,resize, interpolation = cv2.INTER_CUBIC)
 	return dst
 
 def normalize_mean_std(img, individual_channels=True):
