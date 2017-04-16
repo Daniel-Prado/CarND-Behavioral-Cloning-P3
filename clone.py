@@ -7,7 +7,7 @@ from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
 
 lines = []
-with open('../data/driving_log.csv') as csvfile:
+with open('../TRAIN_CAR/driving_log.csv') as csvfile:
 	reader = csv.reader(csvfile)
 	for line in reader:
 		lines.append(line)
