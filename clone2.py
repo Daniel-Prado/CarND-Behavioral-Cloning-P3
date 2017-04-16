@@ -35,13 +35,16 @@ for line in lines:
 
 	image = image.astype('float64')
 
-	for channel in range(3):  
-    	image[:,:,channel] -= np.mean(image[:,:,channel])
-                image[:,:,channel] /= np.std(image[:,:,channel])
+#	for channel in range(3):
+#		image[:,:,channel] -= np.mean(image[:,:,channel])
+#		image[:,:,channel] /= np.std(image[:,:,channel])
+
+	image -= np.mean(image)
+	image /= np.std(image)
 
 	images.append(image)
 	#Get the steering value from column 3
-	measurement = float(line[3]) 
+	measurement = float(line[3])
 	measurements.append(measurement)
 
 augmented_images, augmented_measurements = [], []
@@ -74,7 +77,8 @@ y_train = np.array(augmented_measurements)
 model = Sequential()
 #model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=[120,120,3]))
 #model.add(Cropping2D(cropping=((70,25),(0,0))))
-model.add(Convolution2D(24,5,5,subsample=(2,2),activation="relu"), input_shape=[120,120,3])
+model.add(Convolution2D(24,5,5,subsample=(2,2),activation="relu", input_shape=[120,120,3]))
+#model.add(Convolution2D(24,5,5,subsample=(2,2),activation="relu"))
 model.add(Convolution2D(36,5,5,subsample=(2,2),activation="relu"))
 model.add(Convolution2D(48,5,5,subsample=(2,2),activation="relu"))
 model.add(Convolution2D(64,3,3,activation="relu"))
@@ -91,7 +95,7 @@ model.add(Dense(1))
 model.compile(loss='mse', optimizer='adam')
 model.fit(X_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=5)
 
-model.save('model_NVidia_Perspective.h5')
+model.save('model_NVidia_Perspective_NormStd3.h5')
 
 
 
