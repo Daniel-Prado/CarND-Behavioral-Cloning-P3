@@ -24,7 +24,7 @@ for line in lines:
 	current_path = '../TRAIN_CAR/IMG/' + filename
 	image = cv2.imread(current_path)
 
-	image = perspective_transform(image, (160,160))
+	#image = perspective_transform(image, (160,160))
 
 	images.append(image)
 	#Get the steering value from column 3
@@ -59,8 +59,8 @@ y_train = np.array(augmented_measurements)
 
 ### NVIDIA Model
 model = Sequential()
-model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=[160,160,3]))
-#model.add(Cropping2D(cropping=((70,25),(0,0))))
+model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=[160,320,3]))
+model.add(Cropping2D(cropping=((70,25),(0,0))))
 #model.add(Convolution2D(24,5,5,subsample=(2,2),activation="relu", input_shape=[160,160,3]))
 model.add(Convolution2D(24,5,5,subsample=(2,2),activation="relu"))
 model.add(Convolution2D(36,5,5,subsample=(2,2),activation="relu"))
