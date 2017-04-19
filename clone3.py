@@ -2,6 +2,7 @@
 import csv
 import numpy as np
 import cv2
+import tensorflow as tf
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Lambda, Cropping2D
 from keras.layers.convolutional import Convolution2D
@@ -21,24 +22,25 @@ cnn_input_shape = [96, 96, 3]
 
 
 def shift_image(image,input_angle,max_range):
-	'''
-	Horizontal and vertical Translation
+	''' Horizontal and vertical Translation
 	Apply random horizontal translation to simulate car at various positions in the road
 	For each pixel translation apply corresponding steering angle shift
 	Minimum Horizontal shift is 5 pixels
 	'''
-    x_shift = np.random.uniform(5, max_range/2)
-    if np.random.randint(2) == 1:
-    	x_shift = x_shift * -1.0
 
-    output_angle = input_angle + x_shift/max_range*0.4
-    
-    y_shift = np.random.uniform(-10,10)
-    
-    rows, cols = image.shape[:2]
-    M = np.float32([[1,0,x_shift],[0,1,y_shift]])
-    shifted_image = cv2.warpAffine(image,M,(cols,rows))
-	
+	x_shift = np.random.uniform(low=5.0, high=max_range/2.0)
+	#flip a coin to decide sign
+	if np.random.randint(2) == 1:
+		x_shift = x_shift * -1.0
+
+	output_angle = input_angle + x_shift/max_range*0.4
+
+	y_shift = np.random.uniform(-10,10)
+
+	rows, cols = image.shape[:2]
+	M = np.float32([[1,0,x_shift],[0,1,y_shift]])
+	shifted_image = cv2.warpAffine(image,M,(cols,rows))
+
 	return shifted_image,output_angle
 
 def transf_brightness(img):
@@ -56,7 +58,7 @@ def transf_brightness(img):
 	darker_image = cv2.cvtColor(hsv.astype('uint8'), cv2.COLOR_HSV2RGB)
 	return darker_image
 
-def resized(img, resize=None)
+def resized(img, resize=None):
 	if resize == None:
 		resize = cnn_resizing
 	return cv2.resize(img, resize, interpolation = cv2.INTER_CUBIC)
@@ -69,7 +71,7 @@ def load_csv_file():
 	Opens the driving_log.csv file and loads its contents in a list of lines.
 	'''
 	lines = []
-	with open('../TRAIN_CAR/driving_log.csv') as csvfile:
+	with open('../data/driving_log.csv') as csvfile:
 		reader = csv.reader(csvfile)
 		for line in reader:
 			lines.append(line)
@@ -80,9 +82,9 @@ def load_images(lines, usecams='LCR'):
 	measurements = []
 
 	for line_items in lines:
-		if usecams = 'LCR':
+		if usecams == 'LCR':
 			img_line_range = 3
-		elif usecams = 'C':
+		elif usecams == 'C':
 			img_line_range = 1
 		else:
 			print("DEBUG: invalid usecams value")
@@ -90,11 +92,9 @@ def load_images(lines, usecams='LCR'):
 
 		# For each center, left and right camera images:
 		for i in range(img_line_range):
-			filename = '../TRAIN_CAR/IMG/' + line_items[i].split('/')[-1]
+			filename = '../data/IMG/' + line_items[i].split('/')[-1]
 			image = cv2.imread(filename)
 
-			# We crop right away:
-			image = cropped(image)
 			images.append(image)
 			# Read steering angle
 			measurement = float(line_items[3])
@@ -106,6 +106,9 @@ def load_images(lines, usecams='LCR'):
 def augment_images(images, angles):
 	augmented_images, augmented_angles = [], []
 	for image, angle in zip(images,angles):
+		# We crop right away:
+		image = cropped(image)
+		image = cropped(image)
 		if abs(angle)<0.01:
 			# We will take only 10% of the 0-angle images.
 			if np.random.uniform(0.0, 1.0) > 0.9:
@@ -169,7 +172,7 @@ def main(_):
 	### End of NVIDIA Model
 
 	model.compile(loss='mse', optimizer='adam')
-	model.fit(X_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=3)
+	#model.fit(X_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=3)
 
 	# save model architecture and weights at the end of the training
 	with open('model.json', 'w') as f:

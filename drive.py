@@ -45,7 +45,7 @@ class SimplePIController:
 
 
 controller = SimplePIController(0.1, 0.002)
-set_speed = 20
+set_speed = 12
 controller.set_desired(set_speed)
 
 global iteraciones, start, lap
@@ -72,8 +72,8 @@ def telemetry(sid, data):
         image_array = np.asarray(image)
 
         ### PRE-PROCESSING BEFORE KERAS MODEL
-        image_array = perspective_transform(image_array)
-        image_array = normalize_mean_std(image_array)
+        #image_array = perspective_transform(image_array)
+        #image_array = normalize_mean_std(image_array)
         #####################################
 
         steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1))
