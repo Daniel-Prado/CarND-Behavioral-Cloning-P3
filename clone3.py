@@ -64,7 +64,7 @@ def resized(img, resize=None):
 	return cv2.resize(img, resize, interpolation = cv2.INTER_CUBIC)
 
 def cropped(img, high=65, low=20 ):
-	return image[high:-low,:,:]
+	return img[high:-low,:,:]
 
 def load_csv_file():
 	'''
@@ -79,7 +79,7 @@ def load_csv_file():
 
 def load_images(lines, usecams='LCR'):
 	images = []
-	measurements = []
+	angles = []
 
 	for line_items in lines:
 		if usecams == 'LCR':
@@ -88,7 +88,6 @@ def load_images(lines, usecams='LCR'):
 			img_line_range = 1
 		else:
 			print("DEBUG: invalid usecams value")
-			return False
 
 		# For each center, left and right camera images:
 		for i in range(img_line_range):
@@ -101,13 +100,12 @@ def load_images(lines, usecams='LCR'):
 			# Apply steering angle correction for center, left and right camera
 			angle = measurement+correction[i]
 			angles.append(angle)
-	return True	
+	return images,angles	
 
 def augment_images(images, angles):
 	augmented_images, augmented_angles = [], []
 	for image, angle in zip(images,angles):
 		# We crop right away:
-		image = cropped(image)
 		image = cropped(image)
 		if abs(angle)<0.01:
 			# We will take only 10% of the 0-angle images.
@@ -138,12 +136,17 @@ def augment_images(images, angles):
 
 def main(_):
 
+	print("Loading CSV file...")
 	lines = load_csv_file()
-	images, angles = load_images(lines, 'LCR')
+	print("Loaded.")
+	print("Loading images in file...")
+	images, angles = load_images(lines[1:], 'LCR')
+	print("Images loaded: ", len(images))
+	print("Augmenting images...")
 	augmented_images, augmented_angles = augment_images(images, angles)
-	
 	X_train = np.array(augmented_images)
 	y_train = np.array(augmented_angles)
+	print("Images augmented. Total:", len(X_train), "images")
 
 	### NVIDIA Model
 	model = Sequential()
@@ -157,16 +160,16 @@ def main(_):
 	model.add(Flatten())
 
 	model.add(Dense(100))
-	model.add(Activation("relu"))
-	model.add(Dropout(DROP_PROB))
+	#model.add(Activation("relu"))
+	#model.add(Dropout(DROP_PROB))
 
 	model.add(Dense(50))
-	model.add(Activation("relu"))
-	model.add(Dropout(DROP_PROB))
+	#model.add(Activation("relu"))
+	#model.add(Dropout(DROP_PROB))
 
 	model.add(Dense(10))
-	model.add(Activation("relu"))
-	model.add(Dropout(DROP_PROB))
+	#model.add(Activation("relu"))
+	#model.add(Dropout(DROP_PROB))
 
 	model.add(Dense(1))
 	### End of NVIDIA Model
