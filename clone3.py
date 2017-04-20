@@ -179,12 +179,14 @@ def main(_):
 		f.write( model.to_json() )
 
 	model.save('model.h5')
-	
-	#CleanUp
-	K.clear_session()
+	print("Training complete!")
+
 
 
 if __name__ == '__main__':
 	tf.app.run()
+	#CleanUp
+	K.clear_session()
+	gc.collect()
 
 

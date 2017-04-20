@@ -53,7 +53,7 @@ iteraciones = 0
 start =0
 lap=0
 
-from preprocess import perspective_transform, normalize_mean_std
+from clone3 import resized, cropped
 import time
 
 @sio.on('telemetry')
@@ -74,6 +74,7 @@ def telemetry(sid, data):
         ### PRE-PROCESSING BEFORE KERAS MODEL
         #image_array = perspective_transform(image_array)
         #image_array = normalize_mean_std(image_array)
+        image_array = resized(cropped(image_array))
         #####################################
 
         steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1))
