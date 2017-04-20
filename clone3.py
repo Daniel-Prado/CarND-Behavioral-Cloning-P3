@@ -4,7 +4,7 @@ import numpy as np
 import cv2
 import tensorflow as tf
 from keras.models import Sequential
-from keras.layers import Flatten, Dense, Lambda, Cropping2D
+from keras.layers import Flatten, Dense, Lambda, Cropping2D, Activation, Dropout
 from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
 from preprocess import perspective_transform, normalize_mean_std
@@ -12,10 +12,10 @@ from preprocess import perspective_transform, normalize_mean_std
 ###########################################################
 # Variables Definition
 ###########################################################
-usecams = 'LCR' # 'C' for Center or 'LCR' for Left-Center-Right
+usecams = 'C' # 'C' for Center or 'LCR' for Left-Center-Right
 correction = [0.0, 0.25, -0.25] # [C, L, R] corrections
 DROP_PROB = 0.35
-N_MULTIPLY = 2
+N_MULTIPLY = 6
 
 cnn_resizing = (96,96)
 cnn_input_shape = [96, 96, 3]
@@ -75,7 +75,7 @@ def load_csv_file():
 		reader = csv.reader(csvfile)
 		for line in reader:
 			lines.append(line)
-	return lines	
+	return lines
 
 def load_images(lines, usecams='LCR'):
 	images = []
@@ -100,16 +100,16 @@ def load_images(lines, usecams='LCR'):
 			# Apply steering angle correction for center, left and right camera
 			angle = measurement+correction[i]
 			angles.append(angle)
-	return images,angles	
+	return images,angles
 
 def augment_images(images, angles):
 	augmented_images, augmented_angles = [], []
 	for image, angle in zip(images,angles):
 		# We crop right away:
 		image = cropped(image)
-		if abs(angle)<0.01:
-			# We will take only 10% of the 0-angle images.
-			if np.random.uniform(0.0, 1.0) > 0.9:
+		if abs(angle)<0.01 or abs(angle)==0.25:
+			# We will take only 20% of the 0-angle images.
+			if np.random.uniform(0.0, 1.0) > 0.8:
 				augmented_images.append(resized(image))
 				augmented_angles.append(angle)
 		else:
@@ -130,7 +130,7 @@ def augment_images(images, angles):
 				augmented_angles.append(shifted_angle)
 
 				augmented_images.append(resized(cv2.flip(darkened_si,1)))
-				augmented_angles.append(angle*-1.0)
+				augmented_angles.append(shifted_angle*-1.0)
 	return augmented_images, augmented_angles
 
 
@@ -140,7 +140,7 @@ def main(_):
 	lines = load_csv_file()
 	print("Loaded.")
 	print("Loading images in file...")
-	images, angles = load_images(lines[1:], 'LCR')
+	images, angles = load_images(lines[1:], usecams)
 	print("Images loaded: ", len(images))
 	print("Augmenting images...")
 	augmented_images, augmented_angles = augment_images(images, angles)
@@ -175,7 +175,7 @@ def main(_):
 	### End of NVIDIA Model
 
 	model.compile(loss='mse', optimizer='adam')
-	#model.fit(X_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=3)
+	model.fit(X_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=3)
 
 	# save model architecture and weights at the end of the training
 	with open('model.json', 'w') as f:
