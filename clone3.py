@@ -15,7 +15,7 @@ from preprocess import perspective_transform, normalize_mean_std
 usecams = 'LCR' # 'C' for Center or 'LCR' for Left-Center-Right
 correction = [0.0, 0.25, -0.25] # [C, L, R] corrections
 DROP_PROB = 0.35
-N_MULTIPLY = 4
+N_MULTIPLY = 2
 
 cnn_resizing = (96,96)
 cnn_input_shape = [96, 96, 3]
@@ -110,8 +110,8 @@ def augment_images(images, angles):
 		if abs(angle)<0.01:
 			# We will take only 10% of the 0-angle images.
 			if np.random.uniform(0.0, 1.0) > 0.9:
-					augmented_images.append(resized(image))
-					augmented_angles.append(angle)
+				augmented_images.append(resized(image))
+				augmented_angles.append(angle)
 		else:
 			# First we include the original image, resized
 			augmented_images.append(resized(image))
