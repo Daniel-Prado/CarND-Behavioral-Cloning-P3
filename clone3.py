@@ -9,13 +9,16 @@ from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
 from preprocess import perspective_transform, normalize_mean_std
 
+from keras.layers.advanced_activations import PReLU
+from keras.regularizers import l2
+
 ###########################################################
 # Variables Definition
 ###########################################################
-usecams = 'C' # 'C' for Center or 'LCR' for Left-Center-Right
+usecams = 'LCR' # 'C' for Center or 'LCR' for Left-Center-Right
 correction = [0.0, 0.25, -0.25] # [C, L, R] corrections
 DROP_PROB = 0.35
-N_MULTIPLY = 6
+N_MULTIPLY = 2
 
 cnn_resizing = (96,96)
 cnn_input_shape = [96, 96, 3]
@@ -108,10 +111,12 @@ def augment_images(images, angles):
 		# We crop right away:
 		image = cropped(image)
 		if abs(angle)<0.01 or abs(angle)==0.25:
-			# We will take only 20% of the 0-angle images.
-			if np.random.uniform(0.0, 1.0) > 0.8:
+			# We will take 100% of the 0-angle images.
+			if np.random.uniform(0.0, 1.0) > 0:
 				augmented_images.append(resized(image))
 				augmented_angles.append(angle)
+				augmented_images.append(resized(cv2.flip(image,1)))
+				augmented_angles.append(angle*-1.0)
 		else:
 			# First we include the original image, resized
 			augmented_images.append(resized(image))
@@ -122,15 +127,15 @@ def augment_images(images, angles):
 
 			# Now we obtain N_MULTIPLY augmented images of the original, applying x,y shift and 
 			# randomly shifted image in x,y
-			for _ in range(N_MULTIPLY):
-				shifted_image, shifted_angle = shift_image(image, angle, 100)
-				darkened_si = transf_brightness(shifted_image)
-
-				augmented_images.append(resized(darkened_si))
-				augmented_angles.append(shifted_angle)
-
-				augmented_images.append(resized(cv2.flip(darkened_si,1)))
-				augmented_angles.append(shifted_angle*-1.0)
+#			for _ in range(N_MULTIPLY):
+#				shifted_image, shifted_angle = shift_image(image, angle, 100)
+#				darkened_si = transf_brightness(shifted_image)
+#
+#				augmented_images.append(resized(darkened_si))
+#				augmented_angles.append(shifted_angle)
+#
+#				augmented_images.append(resized(cv2.flip(darkened_si,1)))
+#				augmented_angles.append(shifted_angle*-1.0)
 	return augmented_images, augmented_angles
 
 
@@ -159,19 +164,19 @@ def main(_):
 	model.add(Convolution2D(64,3,3,activation="relu"))
 	model.add(Flatten())
 
-	model.add(Dense(100))
-	#model.add(Activation("relu"))
+	model.add(Dense(100, W_regularizer=l2(0.001)))
+	model.add(PReLU())
 	#model.add(Dropout(DROP_PROB))
 
-	model.add(Dense(50))
-	#model.add(Activation("relu"))
+	model.add(Dense(50, W_regularizer=l2(0.001)))
+	model.add(PReLU())
 	#model.add(Dropout(DROP_PROB))
 
-	model.add(Dense(10))
-	#model.add(Activation("relu"))
+	model.add(Dense(10,  W_regularizer=l2(0.001)))
+	model.add(PReLU())
 	#model.add(Dropout(DROP_PROB))
 
-	model.add(Dense(1))
+	model.add(Dense(1, W_regularizer=l2(0.001)))
 	### End of NVIDIA Model
 
 	model.compile(loss='mse', optimizer='adam')
