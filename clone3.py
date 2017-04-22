@@ -17,7 +17,7 @@ from keras.regularizers import l2
 # Variables Definition
 ###########################################################
 usecams = 'LCR' # 'C' for Center or 'LCR' for Left-Center-Right
-correction = [0.0, 0.25, -0.25] # [C, L, R] corrections
+correction = [0.0, 0.10, -0.10] # [C, L, R] corrections
 DROP_PROB = 0.35
 N_MULTIPLY = 2
 
@@ -37,9 +37,10 @@ def shift_image(image,input_angle,max_range):
 	if np.random.randint(2) == 1:
 		x_shift = x_shift * -1.0
 
-	output_angle = input_angle + x_shift/max_range*0.4
+	output_angle = input_angle + x_shift/max_range*0.15
 
-	y_shift = np.random.uniform(-10,10)
+	#y_shift = np.random.uniform(-10,10)
+	y_shift = 0
 
 	rows, cols = image.shape[:2]
 	M = np.float32([[1,0,x_shift],[0,1,y_shift]])
@@ -115,7 +116,7 @@ def augment_images(images, angles):
 	for image, angle in zip(images,angles):
 		# We crop right away:
 		image = cropped(image)
-		if abs(angle)<0.01 or abs(angle)==0.25:
+		if abs(angle)<0.01 or abs(angle)==correction[1]:
 			# We will take 50% of the 0-angle images.
 			if np.random.uniform(0.0, 1.0) > 0.5:
 				augmented_images.append(resized(image))
@@ -133,6 +134,7 @@ def augment_images(images, angles):
 			# randomly shifted image in x,y
 			for _ in range(N_MULTIPLY):
 				shifted_image, shifted_angle = shift_image(image, angle, 100)
+				shifted_image, shifted_angle =  image, angle
 				darkened_si = transf_brightness(shifted_image)
 
 				augmented_images.append(resized(darkened_si))
@@ -172,7 +174,7 @@ def main(_):
 
 	model.add(Dense(100, W_regularizer=l2(0.001)))
 	model.add(PReLU())
-	#model.add(Dropout(DROP_PROB))
+	model.add(Dropout(DROP_PROB))
 
 	model.add(Dense(50, W_regularizer=l2(0.001)))
 	model.add(PReLU())
@@ -192,7 +194,7 @@ def main(_):
 	with open('model.json', 'w') as f:
 		f.write( model.to_json() )
 
-	model.save('model_RGB.h5')
+	model.save('model_RGB_v2.h5')
 	print("Training complete!")
 
 
