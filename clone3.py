@@ -97,6 +97,8 @@ def load_images(lines, usecams='LCR'):
 			filename = '../data/IMG/' + line_items[i].split('/')[-1]
 			image = cv2.imread(filename)
 
+			image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
 			images.append(image)
 			# Read steering angle
 			measurement = float(line_items[3])
@@ -104,6 +106,8 @@ def load_images(lines, usecams='LCR'):
 			angle = measurement+correction[i]
 			angles.append(angle)
 	return images,angles
+
+
 
 def augment_images(images, angles):
 	augmented_images, augmented_angles = [], []
@@ -124,7 +128,6 @@ def augment_images(images, angles):
 			# And also its flipped version
 			augmented_images.append(resized(cv2.flip(image,1)))
 			augmented_angles.append(angle*-1.0)
-
 			# Now we obtain N_MULTIPLY augmented images of the original, applying x,y shift and 
 			# randomly shifted image in x,y
 #			for _ in range(N_MULTIPLY):
@@ -149,6 +152,8 @@ def main(_):
 	print("Images loaded: ", len(images))
 	print("Augmenting images...")
 	augmented_images, augmented_angles = augment_images(images, angles)
+	images = []
+	gc.collect()
 	X_train = np.array(augmented_images)
 	y_train = np.array(augmented_angles)
 	print("Images augmented. Total:", len(X_train), "images")
