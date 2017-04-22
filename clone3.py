@@ -3,6 +3,7 @@ import csv
 import numpy as np
 import cv2
 import tensorflow as tf
+import gc
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Lambda, Cropping2D, Activation, Dropout
 from keras.layers.convolutional import Convolution2D
@@ -115,8 +116,8 @@ def augment_images(images, angles):
 		# We crop right away:
 		image = cropped(image)
 		if abs(angle)<0.01 or abs(angle)==0.25:
-			# We will take 100% of the 0-angle images.
-			if np.random.uniform(0.0, 1.0) > 0:
+			# We will take 50% of the 0-angle images.
+			if np.random.uniform(0.0, 1.0) > 0.5:
 				augmented_images.append(resized(image))
 				augmented_angles.append(angle)
 				augmented_images.append(resized(cv2.flip(image,1)))
@@ -130,15 +131,15 @@ def augment_images(images, angles):
 			augmented_angles.append(angle*-1.0)
 			# Now we obtain N_MULTIPLY augmented images of the original, applying x,y shift and 
 			# randomly shifted image in x,y
-#			for _ in range(N_MULTIPLY):
-#				shifted_image, shifted_angle = shift_image(image, angle, 100)
-#				darkened_si = transf_brightness(shifted_image)
-#
-#				augmented_images.append(resized(darkened_si))
-#				augmented_angles.append(shifted_angle)
-#
-#				augmented_images.append(resized(cv2.flip(darkened_si,1)))
-#				augmented_angles.append(shifted_angle*-1.0)
+			for _ in range(N_MULTIPLY):
+				shifted_image, shifted_angle = shift_image(image, angle, 100)
+				darkened_si = transf_brightness(shifted_image)
+
+				augmented_images.append(resized(darkened_si))
+				augmented_angles.append(shifted_angle)
+
+				augmented_images.append(resized(cv2.flip(darkened_si,1)))
+				augmented_angles.append(shifted_angle*-1.0)
 	return augmented_images, augmented_angles
 
 
@@ -191,7 +192,7 @@ def main(_):
 	with open('model.json', 'w') as f:
 		f.write( model.to_json() )
 
-	model.save('model.h5')
+	model.save('model_RGB.h5')
 	print("Training complete!")
 
 
