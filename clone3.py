@@ -135,7 +135,6 @@ def augment_images(images, angles):
 			# randomly shifted image in x,y
 			for _ in range(N_MULTIPLY):
 				shifted_image, shifted_angle = shift_image(image, angle, 100)
-				shifted_image, shifted_angle =  image, angle
 				darkened_si = transf_brightness(shifted_image)
 
 				augmented_images.append(resized(darkened_si))
