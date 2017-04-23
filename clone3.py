@@ -66,7 +66,8 @@ def transf_brightness(img):
 def resized(img, resize=None):
 	if resize == None:
 		resize = cnn_resizing
-	return cv2.resize(img, resize, interpolation = cv2.INTER_CUBIC)
+	img_ret = cv2.resize(img, resize, interpolation = cv2.INTER_CUBIC)
+	return cv2.cvtColor(img_ret, cv2.color_RGB2YUV)
 
 def cropped(img, high=65, low=20 ):
 	return img[high:-low,:,:]
