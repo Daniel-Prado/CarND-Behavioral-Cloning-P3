@@ -67,7 +67,7 @@ def resized(img, resize=None):
 	if resize == None:
 		resize = cnn_resizing
 	img_ret = cv2.resize(img, resize, interpolation = cv2.INTER_CUBIC)
-	return cv2.cvtColor(img_ret, cv2.color_RGB2YUV)
+	return cv2.cvtColor(img_ret, cv2.COLOR_RGB2YUV)
 
 def cropped(img, high=65, low=20 ):
 	return img[high:-low,:,:]
@@ -195,7 +195,7 @@ def main(_):
 	with open('model.json', 'w') as f:
 		f.write( model.to_json() )
 
-	model.save('model_RGB_v2.h5')
+	model.save('model_YUV_v2.h5')
 	print("Training complete!")
 
 
