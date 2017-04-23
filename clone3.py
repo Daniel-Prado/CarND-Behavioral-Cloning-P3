@@ -8,7 +8,7 @@ from keras.models import Sequential
 from keras.layers import Flatten, Dense, Lambda, Cropping2D, Activation, Dropout
 from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
-from preprocess import perspective_transform, normalize_mean_std
+#from preprocess import perspective_transform, normalize_mean_std
 
 from keras.layers.advanced_activations import PReLU
 from keras.regularizers import l2
@@ -19,10 +19,10 @@ from keras.regularizers import l2
 usecams = 'LCR' # 'C' for Center or 'LCR' for Left-Center-Right
 correction = [0.0, 0.10, -0.10] # [C, L, R] corrections
 DROP_PROB = 0.35
-N_MULTIPLY = 2
+N_MULTIPLY = 4
 
-cnn_resizing = (96,96)
-cnn_input_shape = [96, 96, 3]
+cnn_resizing = (64,64)
+cnn_input_shape = [64, 64, 3]
 
 
 def shift_image(image,input_angle,max_range):
@@ -37,10 +37,10 @@ def shift_image(image,input_angle,max_range):
 	if np.random.randint(2) == 1:
 		x_shift = x_shift * -1.0
 
-	output_angle = input_angle + x_shift/max_range*0.15
+	output_angle = input_angle + x_shift/max_range*0.10
 
-	#y_shift = np.random.uniform(-10,10)
-	y_shift = 0
+	y_shift = np.random.uniform(-10,10)
+	#y_shift = 0
 
 	rows, cols = image.shape[:2]
 	M = np.float32([[1,0,x_shift],[0,1,y_shift]])
@@ -77,7 +77,7 @@ def load_csv_file():
 	Opens the driving_log.csv file and loads its contents in a list of lines.
 	'''
 	lines = []
-	with open('../data/driving_log.csv') as csvfile:
+	with open('../TRAIN_CAR2/driving_log.csv') as csvfile:
 		reader = csv.reader(csvfile)
 		for line in reader:
 			lines.append(line)
@@ -97,7 +97,7 @@ def load_images(lines, usecams='LCR'):
 
 		# For each center, left and right camera images:
 		for i in range(img_line_range):
-			filename = '../data/IMG/' + line_items[i].split('/')[-1]
+			filename = '../TRAIN_CAR2/IMG/' + line_items[i].split('/')[-1]
 			image = cv2.imread(filename)
 
 			image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -118,8 +118,8 @@ def augment_images(images, angles):
 		# We crop right away:
 		image = cropped(image)
 		if abs(angle)<0.01 or abs(angle)==correction[1]:
-			# We will take 50% of the 0-angle images.
-			if np.random.uniform(0.0, 1.0) > 0.5:
+			# We will take 20% of the 0-angle images.
+			if np.random.uniform(0.0, 1.0) > 0.8:
 				augmented_images.append(resized(image))
 				augmented_angles.append(angle)
 				augmented_images.append(resized(cv2.flip(image,1)))
@@ -173,15 +173,15 @@ def main(_):
 	model.add(Flatten())
 
 	model.add(Dense(100, W_regularizer=l2(0.001)))
-	model.add(PReLU())
-	model.add(Dropout(DROP_PROB))
+#	model.add(PReLU())
+#	model.add(Dropout(DROP_PROB))
 
 	model.add(Dense(50, W_regularizer=l2(0.001)))
-	model.add(PReLU())
+#	model.add(PReLU())
 	#model.add(Dropout(DROP_PROB))
 
 	model.add(Dense(10,  W_regularizer=l2(0.001)))
-	model.add(PReLU())
+#	model.add(PReLU())
 	#model.add(Dropout(DROP_PROB))
 
 	model.add(Dense(1, W_regularizer=l2(0.001)))
@@ -194,7 +194,7 @@ def main(_):
 	with open('model.json', 'w') as f:
 		f.write( model.to_json() )
 
-	model.save('model_YUV_v2.h5')
+	model.save('model.h5')
 	print("Training complete!")
 
 
