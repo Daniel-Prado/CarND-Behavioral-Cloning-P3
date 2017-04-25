@@ -126,7 +126,7 @@ def augment_images(images, angles):
 			if np.random.uniform(0.0, 1.0) > 0.8:
 				augmented_images.append(image)
 				augmented_angles.append(angle)
-				augmented_images.append(cv2.flip(image,1)))
+				augmented_images.append(cv2.flip(image,1))
 				augmented_angles.append(angle*-1.0)
 		else:
 			# First we include the original image, resized
@@ -198,7 +198,7 @@ def main(_):
 	with open('model.json', 'w') as f:
 		f.write( model.to_json() )
 
-	model.save('model_YUV_v2.h5')
+	model.save('model_bird_RGB.h5')
 	print("Training complete!")
 
 
