@@ -15,6 +15,7 @@ from io import BytesIO
 from keras.models import load_model
 import h5py
 from keras import __version__ as keras_version
+import cv2
 
 sio = socketio.Server()
 app = Flask(__name__)
@@ -53,7 +54,7 @@ iteraciones = 0
 start =0
 lap=0
 
-from preprocess import perspective_transform, normalize_mean_std
+from clone3 import resized, cropped
 import time
 
 @sio.on('telemetry')
@@ -72,8 +73,11 @@ def telemetry(sid, data):
         image_array = np.asarray(image)
 
         ### PRE-PROCESSING BEFORE KERAS MODEL
-        image_array = perspective_transform(image_array)
-        image_array = normalize_mean_std(image_array)
+        #image_array = perspective_transform(image_array)
+        #image_array = normalize_mean_std(image_array)
+        image_array = resized(cropped(image_array))
+        # NOTE ! RESIZED already transforms to YUV, so below line not necessary
+        #image_array = cv2.cvtColor(image_array.astype('uint8'), cv2.COLOR_RGB2YUV)
         #####################################
 
         steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1))
@@ -90,7 +94,7 @@ def telemetry(sid, data):
             start = lap
         iteraciones +=1
 
-        print(steering_angle, throttle)
+        #print(steering_angle, throttle)
         send_control(steering_angle, throttle)
 
 
