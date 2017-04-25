@@ -76,8 +76,8 @@ def telemetry(sid, data):
         #image_array = perspective_transform(image_array)
         #image_array = normalize_mean_std(image_array)
         image_array = resized(cropped(image_array))
-
-        image_array = cv2.cvtColor(image_array.astype('uint8'), cv2.COLOR_RGB2YUV)
+        # NOTE ! RESIZED already transforms to YUV, so below line not necessary
+        #image_array = cv2.cvtColor(image_array.astype('uint8'), cv2.COLOR_RGB2YUV)
         #####################################
 
         steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1))

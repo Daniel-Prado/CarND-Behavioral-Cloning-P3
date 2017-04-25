@@ -182,7 +182,7 @@ def main(_):
 
 	model.add(Dense(10,  W_regularizer=l2(0.001)))
 #	model.add(PReLU())
-	#model.add(Dropout(DROP_PROB))
+#	#model.add(Dropout(DROP_PROB))
 
 	model.add(Dense(1, W_regularizer=l2(0.001)))
 	### End of NVIDIA Model
