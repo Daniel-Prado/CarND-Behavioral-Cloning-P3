@@ -17,12 +17,12 @@ from keras.regularizers import l2
 # Variables Definition
 ###########################################################
 usecams = 'LCR' # 'C' for Center or 'LCR' for Left-Center-Right
-correction = [0.0, 0.10, -0.10] # [C, L, R] corrections
+correction = [0.0, 0.15, -0.15] # [C, L, R] corrections
 DROP_PROB = 0.35
-N_MULTIPLY = 2
+N_MULTIPLY = 0
 
 cnn_resizing = (64,64)
-cnn_input_shape = [64, 64, 3]
+cnn_input_shape = [85, 120, 3]
 
 
 def shift_image(image,input_angle,max_range):
@@ -54,7 +54,7 @@ def transf_brightness(img):
 	img : input image in RGB format
 	'''
 	hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
-	alpha = np.random.uniform(low=0.1, high=1.0, size=None)
+	alpha = np.random.uniform(low=0.3, high=1.0, size=None)
 	v = hsv[:,:,2]
 	v = v * alpha
 	v = np.clip(v,0,255)
@@ -63,14 +63,17 @@ def transf_brightness(img):
 	darker_image = cv2.cvtColor(hsv.astype('uint8'), cv2.COLOR_HSV2RGB)
 	return darker_image
 
-def resized(img, resize=None):
-	if resize == None:
-		resize = cnn_resizing
-	img_ret = cv2.resize(img, resize, interpolation = cv2.INTER_CUBIC)
-	return cv2.cvtColor(img_ret, cv2.COLOR_RGB2YUV)
+#def resized(img, resize=None):
+#	if resize == None:
+#		resize = cnn_resizing
+#	img_ret = cv2.resize(img, resize, interpolation = cv2.INTER_CUBIC)
+#	return cv2.cvtColor(img_ret, cv2.COLOR_RGB2YUV)
 
 def cropped(img, high=65, low=20 ):
 	return img[high:-low,:,:]
+
+def cropped_birdeye(img, high=65, low=10, left=100, right=100):
+	return img[high:-low,left:-right,:]
 
 def load_csv_file():
 	'''
@@ -116,31 +119,32 @@ def augment_images(images, angles):
 	augmented_images, augmented_angles = [], []
 	for image, angle in zip(images,angles):
 		# We crop right away:
-		image = cropped(image)
+		image = perspective_transform(image)
+		image = cropped_birdeye(image) #120x85
 		if abs(angle)<0.01 or abs(angle)==correction[1]:
 			# We will take 20% of the 0-angle images.
 			if np.random.uniform(0.0, 1.0) > 0.8:
-				augmented_images.append(resized(image))
+				augmented_images.append(image)
 				augmented_angles.append(angle)
-				augmented_images.append(resized(cv2.flip(image,1)))
+				augmented_images.append(cv2.flip(image,1)))
 				augmented_angles.append(angle*-1.0)
 		else:
 			# First we include the original image, resized
-			augmented_images.append(resized(image))
+			augmented_images.append(image)
 			augmented_angles.append(angle)
 			# And also its flipped version
-			augmented_images.append(resized(cv2.flip(image,1)))
+			augmented_images.append(cv2.flip(image,1))
 			augmented_angles.append(angle*-1.0)
 			# Now we obtain N_MULTIPLY augmented images of the original, applying x,y shift and 
 			# randomly shifted image in x,y
 			for _ in range(N_MULTIPLY):
-				shifted_image, shifted_angle = shift_image(image, angle, 100)
+				shifted_image, shifted_angle = shift_image(image, angle, 30)
 				darkened_si = transf_brightness(shifted_image)
 
-				augmented_images.append(resized(darkened_si))
+				augmented_images.append(darkened_si)
 				augmented_angles.append(shifted_angle)
 
-				augmented_images.append(resized(cv2.flip(darkened_si,1)))
+				augmented_images.append(cv2.flip(darkened_si,1))
 				augmented_angles.append(shifted_angle*-1.0)
 	return augmented_images, augmented_angles
 
