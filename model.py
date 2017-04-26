@@ -17,9 +17,9 @@ from keras.regularizers import l2
 # Variables Definition
 ###########################################################
 usecams = 'LCR' # 'C' for Center or 'LCR' for Left-Center-Right
-correction = [0.0, 0.10, -0.10] # [C, L, R] corrections
+correction = [0.0, 0.08, -0.08] # [C, L, R] corrections
 DROP_PROB = 0.35
-N_MULTIPLY = 2
+N_MULTIPLY = 4
 
 cnn_resizing = (64,64)
 cnn_input_shape = [64, 64, 3]
@@ -37,10 +37,10 @@ def shift_image(image,input_angle,max_range):
 	if np.random.randint(2) == 1:
 		x_shift = x_shift * -1.0
 
-	output_angle = input_angle + x_shift/max_range*0.15
+	output_angle = input_angle + (x_shift/max_range)*0.4
 
-	#y_shift = np.random.uniform(-10,10)
-	y_shift = 0
+	y_shift = np.random.uniform(-15,15)
+	#y_shift = 0
 
 	rows, cols = image.shape[:2]
 	M = np.float32([[1,0,x_shift],[0,1,y_shift]])
@@ -54,7 +54,7 @@ def transf_brightness(img):
 	img : input image in RGB format
 	'''
 	hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
-	alpha = np.random.uniform(low=0.1, high=1.0, size=None)
+	alpha = np.random.uniform(low=0.5, high=1.0, size=None)
 	v = hsv[:,:,2]
 	v = v * alpha
 	v = np.clip(v,0,255)
@@ -77,7 +77,7 @@ def load_csv_file():
 	Opens the driving_log.csv file and loads its contents in a list of lines.
 	'''
 	lines = []
-	with open('../data/driving_log.csv') as csvfile:
+	with open('../TRAIN_CAR3/driving_log.csv') as csvfile:
 		reader = csv.reader(csvfile)
 		for line in reader:
 			lines.append(line)
@@ -97,7 +97,7 @@ def load_images(lines, usecams='LCR'):
 
 		# For each center, left and right camera images:
 		for i in range(img_line_range):
-			filename = '../data/IMG/' + line_items[i].split('/')[-1]
+			filename = '../TRAIN_CAR3/IMG/' + line_items[i].split('/')[-1]
 			image = cv2.imread(filename)
 
 			image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -172,29 +172,29 @@ def main(_):
 	model.add(Convolution2D(64,3,3,activation="relu"))
 	model.add(Flatten())
 
-	model.add(Dense(100, W_regularizer=l2(0.001)))
+	model.add(Dense(100)) #, W_regularizer=l2(0.001)))
 	#model.add(PReLU())
 	#model.add(Dropout(DROP_PROB))
 
-	model.add(Dense(50, W_regularizer=l2(0.001)))
+	model.add(Dense(50)) #, W_regularizer=l2(0.001)))
 	#model.add(PReLU())
 	#model.add(Dropout(DROP_PROB))
 
-	model.add(Dense(10,  W_regularizer=l2(0.001)))
+	model.add(Dense(10)) #,  W_regularizer=l2(0.001)))
 	#model.add(PReLU())
 	#model.add(Dropout(DROP_PROB))
 
-	model.add(Dense(1, W_regularizer=l2(0.001)))
+	model.add(Dense(1)) #, W_regularizer=l2(0.001)))
 	### End of NVIDIA Model
 
 	model.compile(loss='mse', optimizer='adam')
-	model.fit(X_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=3)
+	model.fit(X_train, y_train, validation_split=0.1, shuffle=True, nb_epoch=3)
 
 	# save model architecture and weights at the end of the training
 	with open('model.json', 'w') as f:
 		f.write( model.to_json() )
 
-	model.save('model_YUV_v2.h5')
+	model.save('model.h5')
 	print("Training complete!")
 
 
