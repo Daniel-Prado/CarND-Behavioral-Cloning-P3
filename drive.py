@@ -54,7 +54,7 @@ iteraciones = 0
 start =0
 lap=0
 
-from model import resized, cropped, cropped_birdeye
+from model import cropped, cropped_birdeye, perspective_transform
 import time
 
 @sio.on('telemetry')
@@ -73,6 +73,7 @@ def telemetry(sid, data):
         image_array = np.asarray(image)
 
         ### PRE-PROCESSING BEFORE KERAS MODEL
+        image_array = cv2.cvtColor(image_array, cv2.COLOR_RGB2YUV)
         image_array = perspective_transform(image_array)
         image_array = cropped_birdeye(image_array)
         #image_array = normalize_mean_std(image_array)
