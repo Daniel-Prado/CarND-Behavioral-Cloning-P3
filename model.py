@@ -19,7 +19,7 @@ from keras.regularizers import l2
 usecams = 'LCR' # 'C' for Center or 'LCR' for Left-Center-Right
 correction = [0.0, 0.15, -0.15] # [C, L, R] corrections
 DROP_PROB = 0.35
-N_MULTIPLY = 0
+N_MULTIPLY = 3
 
 cnn_resizing = (64,64)
 cnn_input_shape = [85, 120, 3]
@@ -75,6 +75,11 @@ def cropped(img, high=65, low=20 ):
 def cropped_birdeye(img, high=65, low=10, left=100, right=100):
 	return img[high:-low,left:-right,:]
 
+def prepro(img):
+	img_ret = cropped_birdeye(perspective_transform(img))
+	img_ret = cv2.cvtColor(img_ret, cv2.COLOR_RGB2YUV)
+	return img_ret
+
 def load_csv_file():
 	'''
 	Opens the driving_log.csv file and loads its contents in a list of lines.
@@ -118,33 +123,31 @@ def load_images(lines, usecams='LCR'):
 def augment_images(images, angles):
 	augmented_images, augmented_angles = [], []
 	for image, angle in zip(images,angles):
-		# We crop right away:
-		image = perspective_transform(image)
-		image = cropped_birdeye(image) #120x85
+		# If steering angle is 'zero' for center or 'zero corrected' L-R cameras
 		if abs(angle)<0.01 or abs(angle)==correction[1]:
 			# We will take 20% of the 0-angle images.
 			if np.random.uniform(0.0, 1.0) > 0.8:
-				augmented_images.append(image)
+				augmented_images.append(prepro(image))
 				augmented_angles.append(angle)
-				augmented_images.append(cv2.flip(image,1))
+				augmented_images.append(prepro(cv2.flip(image,1)))
 				augmented_angles.append(angle*-1.0)
 		else:
 			# First we include the original image, resized
-			augmented_images.append(image)
+			augmented_images.append(prepro(image))
 			augmented_angles.append(angle)
 			# And also its flipped version
-			augmented_images.append(cv2.flip(image,1))
+			augmented_images.append(prepro(cv2.flip(image,1)))
 			augmented_angles.append(angle*-1.0)
 			# Now we obtain N_MULTIPLY augmented images of the original, applying x,y shift and 
 			# randomly shifted image in x,y
 			for _ in range(N_MULTIPLY):
-				shifted_image, shifted_angle = shift_image(image, angle, 30)
+				shifted_image, shifted_angle = shift_image(image, angle, 100)
 				darkened_si = transf_brightness(shifted_image)
 
-				augmented_images.append(darkened_si)
+				augmented_images.append(prepro(darkened_si))
 				augmented_angles.append(shifted_angle)
 
-				augmented_images.append(cv2.flip(darkened_si,1))
+				augmented_images.append(prepro(cv2.flip(darkened_si,1)))
 				augmented_angles.append(shifted_angle*-1.0)
 	return augmented_images, augmented_angles
 
