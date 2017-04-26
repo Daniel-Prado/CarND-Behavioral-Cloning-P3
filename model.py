@@ -22,7 +22,7 @@ DROP_PROB = 0.35
 N_MULTIPLY = 2
 
 cnn_resizing = (64,64)
-cnn_input_shape = [65, 100, 3]
+cnn_input_shape = [85, 100, 3]
 
 
 def shift_image(image,input_angle,max_range):
@@ -72,7 +72,7 @@ def transf_brightness(img):
 def cropped(img, high=65, low=20 ):
 	return img[high:-low,:,:]
 
-def cropped_birdeye(img, high=85, low=10, left=110, right=110):
+def cropped_birdeye(img, high=65, low=10, left=110, right=110):
 	return img[high:-low,left:-right,:]
 
 def prepro(img):
