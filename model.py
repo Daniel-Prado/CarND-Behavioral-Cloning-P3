@@ -19,10 +19,10 @@ from keras.regularizers import l2
 usecams = 'LCR' # 'C' for Center or 'LCR' for Left-Center-Right
 correction = [0.0, 0.15, -0.15] # [C, L, R] corrections
 DROP_PROB = 0.35
-N_MULTIPLY = 3
+N_MULTIPLY = 2
 
 cnn_resizing = (64,64)
-cnn_input_shape = [85, 120, 3]
+cnn_input_shape = [65, 100, 3]
 
 
 def shift_image(image,input_angle,max_range):
@@ -72,7 +72,7 @@ def transf_brightness(img):
 def cropped(img, high=65, low=20 ):
 	return img[high:-low,:,:]
 
-def cropped_birdeye(img, high=65, low=10, left=100, right=100):
+def cropped_birdeye(img, high=85, low=10, left=110, right=110):
 	return img[high:-low,left:-right,:]
 
 def prepro(img):
@@ -85,7 +85,7 @@ def load_csv_file():
 	Opens the driving_log.csv file and loads its contents in a list of lines.
 	'''
 	lines = []
-	with open('../data/driving_log.csv') as csvfile:
+	with open('../TRAIN_CAR3/driving_log.csv') as csvfile:
 		reader = csv.reader(csvfile)
 		for line in reader:
 			lines.append(line)
@@ -105,7 +105,7 @@ def load_images(lines, usecams='LCR'):
 
 		# For each center, left and right camera images:
 		for i in range(img_line_range):
-			filename = '../data/IMG/' + line_items[i].split('/')[-1]
+			filename = '../TRAIN_CAR3/IMG/' + line_items[i].split('/')[-1]
 			image = cv2.imread(filename)
 
 			image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -126,7 +126,7 @@ def augment_images(images, angles):
 		# If steering angle is 'zero' for center or 'zero corrected' L-R cameras
 		if abs(angle)<0.01 or abs(angle)==correction[1]:
 			# We will take 20% of the 0-angle images.
-			if np.random.uniform(0.0, 1.0) > 0.8:
+			if np.random.uniform(0.0, 1.0) > 0.9:
 				augmented_images.append(prepro(image))
 				augmented_angles.append(angle)
 				augmented_images.append(prepro(cv2.flip(image,1)))
@@ -201,7 +201,7 @@ def main(_):
 	with open('model.json', 'w') as f:
 		f.write( model.to_json() )
 
-	model.save('model_bird_RGB.h5')
+	model.save('model.h5')
 	print("Training complete!")
 
 
