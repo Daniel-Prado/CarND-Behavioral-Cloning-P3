@@ -19,7 +19,7 @@ from keras.regularizers import l2
 usecams = 'LCR' # 'C' for Center or 'LCR' for Left-Center-Right
 correction = [0.0, 0.08, -0.08] # [C, L, R] corrections
 DROP_PROB = 0.35
-N_MULTIPLY = 4
+N_MULTIPLY = 2
 
 cnn_resizing = (64,64)
 cnn_input_shape = [64, 64, 3]
@@ -172,23 +172,23 @@ def main(_):
 	model.add(Convolution2D(64,3,3,activation="relu"))
 	model.add(Flatten())
 
-	model.add(Dense(100)) #, W_regularizer=l2(0.001)))
+	model.add(Dense(100, W_regularizer=l2(0.001)))
 	#model.add(PReLU())
 	#model.add(Dropout(DROP_PROB))
 
-	model.add(Dense(50)) #, W_regularizer=l2(0.001)))
+	model.add(Dense(50, W_regularizer=l2(0.001)))
 	#model.add(PReLU())
 	#model.add(Dropout(DROP_PROB))
 
-	model.add(Dense(10)) #,  W_regularizer=l2(0.001)))
+	model.add(Dense(10,  W_regularizer=l2(0.001)))
 	#model.add(PReLU())
 	#model.add(Dropout(DROP_PROB))
 
-	model.add(Dense(1)) #, W_regularizer=l2(0.001)))
+	model.add(Dense(1, W_regularizer=l2(0.001)))
 	### End of NVIDIA Model
 
 	model.compile(loss='mse', optimizer='adam')
-	model.fit(X_train, y_train, validation_split=0.1, shuffle=True, nb_epoch=3)
+	model.fit(X_train, y_train, validation_split=0.1, shuffle=True, nb_epoch=5)
 
 	# save model architecture and weights at the end of the training
 	with open('model.json', 'w') as f:
