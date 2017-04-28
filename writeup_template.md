@@ -36,6 +36,8 @@ My project includes the following files:
 * drive.py for driving the car in autonomous mode
 * model.h5 containing a trained convolution neural network 
 * writeup_report.md summarizing the results
+* video.mp4 test driving in Track 1, recorded using provided video.py
+* Track2_speedx2.mp4 test driving in Track 2, recorded (x2 speed) using 3rd party SW.
 
 #### 2. Submission includes functional code
 Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing 
@@ -59,7 +61,7 @@ With regard to preprocessing, probably here is the part of the project where I s
 
 * I knew that ideally the preprocessing should be implemented within the KERAS model. 1st because that way you don't need to pre-process in python code (slow) in drive.py in realtime (which could lead to performance issues) and 2nd because KERAS should provide a more efficient implementation that eventually could take advantage of the GPU.
 However, my attemps to do so failed, it is not straightforward to implement a Lambda in Keras that uses OpenCV functions inside...
-* Finally, I wanted to try something 'original' for this project and I spent quite a lot of time trying a model than pre-processed the input images to transform them into a "bird-eye" view. This is discussed in section XXXXXXXXXXXXXXXX.
+* Finally, I wanted to try something 'original' for this project and I spent quite a lot of time trying a model than pre-processed the input images to transform them into a "bird-eye" view. This is discussed in an Appendix at the end of this document.
 
 
 
@@ -88,12 +90,14 @@ I have removed 80% of the images with Steering Angle=0.0 in the case of central 
 
 I used Data Augmentation (see function augment_images in model.py line 115), that consisted of:
 * For every image, adding a horizontally flipped copy image (and corresponding flipped steering angle).
-* For every image (not belonging to the 0-steering angle group), I created N_MULTIPLY copies applying random shift traslation and random brightness reduction. The purpose was to reproduce more cases of roads with different degrees of shadow. (See functions shift_image and transf_brightness in lines 28 and 51 respectively).
+* For every image (not belonging to the 0-steering angle group), I created N\_MULTIPLY copies applying random shift traslation and random brightness reduction. The purpose was to reproduce more cases of roads with different degrees of shadow. (See functions shift\_image and transf_brightness in lines 28 and 51 respectively).
 
 The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track. This has been tested as follows:
 * Track 1: the model is capable of driving autonomously for 1 full lap or more, even at high speeds (30 mph).
 * Track 2: the model is capable of driving autonomously for 1 full Lap or more. but only at low speeds (10 mph).
 NOTE: In my latest tests, and as it can be observed in the videos, the model seems to work even better in Track 2 than in Track 1 (despite being much easier and having more training data from Track 1)... This is due to the fact that in the last days I spent a lot of time tweaking the parameters to be able to complete Track 2... which in the other turn has decreassed the smoothness of Track 1.
+Here you can see my Track 2 test video uploaded to youtube: https://youtu.be/uBrxG5xMy6k
+
 * Track 3: I have also tested the model in the 2nd track of the previous version of the Udacity simulator, which renders a mountain road. The model could run the car perfectly even at the highest speed of 30 mph, but only if I selected the "Fastest" video detail, that removes all shadows... Otherwise my model could not cope with the heavy dark shadows of the 1st turn.
 Nevertheless, I found the performance in this Track specially satisfying because it showed that **the model could generalize to a road where it had not been trained at all !!**
 
@@ -144,7 +148,8 @@ Another way would have been to re-train the model recording only the spots where
 
 #### 3. Creation of the Training Set & Training Process
 
-To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving, with the 3 cameras (L-C-R) in two segments of the two tracks:
+To capture good driving behavior, I first recorded two laps on track one using center lane driving. Including the 3 cameras, my training set consisted of a total of 23085 images.
+Here is an example image of center lane driving, with the 3 cameras (L-C-R) in two segments of the two tracks:
 
 ![alt text][image2]
 
@@ -158,17 +163,10 @@ To augment the data sat, I also flipped images and angles thinking that this wou
 
 ![alt text][image6]
 
-
-Etc ....
-
-After the collection process, I had X number of data points. I then preprocessed this data by ...
+After data augmentation, I got a total of 124,396 images, 10% of which I used for validation.
 
 
-I finally randomly shuffled the data set and put Y% of the data into a validation set. 
-
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate 
-
-#### Appendix - An alternative Preprocessing (Bird-Eye)
+### Appendix - An alternative Preprocessing (Bird-Eye)
 It is worth mentioning that I tried to implement a more "sofisticated" pre-processing consisting on applying a persperctive transform to the input images, in order to make the road look as a bird-eye image. Similarly as what is explained in the following Project 4 - Advanced Lane Find.
 My idea was that if I managed to make the curve more distinct and 'aparent' in the image, the model could learn more easily its shapes and extract more easily its features.
 
