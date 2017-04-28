@@ -4,6 +4,11 @@
 
 Overview
 ---
+
+Here's the result of my model driving in Track 2!:
+[![Video Track2 (Speed x2)](https://img.youtube.com/vi/uBrxG5xMy6k/100.jpg)](https://www.youtube.com/watch?v=uBrxG5xMy6k)
+
+
 This repository contains starting files for the Behavioral Cloning Project.
 
 In this project, you will use what you've learned about deep neural networks and convolutional neural networks to clone driving behavior. You will train, validate and test a model using Keras. The model will output a steering angle to an autonomous vehicle.
