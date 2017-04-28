@@ -1,4 +1,6 @@
-# Behaviorial Cloning Project
+# **Behaviorial Cloning Project**
+### by Daniel Prado-Rodriguez,  SDC Nanodegree
+### February Cohort, 4/27/2017
 
 [![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 
