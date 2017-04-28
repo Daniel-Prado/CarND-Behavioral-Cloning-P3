@@ -157,7 +157,7 @@ Then I repeated this process on track two in order to get more data points.
 To augment the data sat, I also flipped images and angles thinking that this would ... For example, here is an image that has then been flipped:
 
 ![alt text][image6]
-![alt text][image7]
+
 
 Etc ....
 
@@ -167,3 +167,13 @@ After the collection process, I had X number of data points. I then preprocessed
 I finally randomly shuffled the data set and put Y% of the data into a validation set. 
 
 I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate 
+
+#### Appendix - An alternative Preprocessing (Bird-Eye)
+It is worth mentioning that I tried to implement a more "sofisticated" pre-processing consisting on applying a persperctive transform to the input images, in order to make the road look as a bird-eye image. Similarly as what is explained in the following Project 4 - Advanced Lane Find.
+My idea was that if I managed to make the curve more distinct and 'aparent' in the image, the model could learn more easily its shapes and extract more easily its features.
+
+![alt text][image7]
+I managed to get a model that worked perfectly well in Track 1 and partially in Track 2. However, the model did not improve the performance of the finally presented model with light pre-processing.  My guess is that this could be due to two reasons:
+* The perspective transform was well suited for Track 1, but not for the complex scenarios of Track 2, including different slope degrees.
+* The perspective transform introduced artifacts in the top part of the images, due to the low resolution of the input images, that could hinder the model.
+
