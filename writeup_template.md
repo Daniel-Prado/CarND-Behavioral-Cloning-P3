@@ -89,7 +89,7 @@ I have removed 80% of the images with Steering Angle=0.0 in the case of central 
 
 I used Data Augmentation (see function augment_images in model.py line 115), that consisted of:
 * For every image, adding a horizontally flipped copy image (and corresponding flipped steering angle).
-* For every image (not belonging to the 0-steering angle group), I created N\_MULTIPLY copies applying random shift traslation and random brightness reduction. The purpose was to reproduce more cases of roads with different degrees of shadow. (See functions shift\_image and transf_brightness in lines 28 and 51 respectively). Below you can see the effect of these 2 functions in a training image:
+* For every image (not belonging to the 0-steering angle group), I created N\_MULTIPLY copies applying random shift traslation and random brightness reduction. The purpose was to reproduce more cases of roads with different degrees of shadow. (See functions shift\_image and transf_brightness in lines 28 and 51 respectively). Below you can see the effect of these 2 functions in a training image (note this is applied after cropping, but before resizing, as explained later)
 
 ![alt text][image5]
 
@@ -174,6 +174,10 @@ It is worth mentioning that I tried to implement a more "sofisticated" pre-proce
 My idea was that if I managed to make the curve more distinct and 'aparent' in the image, the model could learn more easily its shapes and extract more easily its features.
 
 ![alt text][image4]
+
+The code for this alternative approach can be found in the "perspective" branch of my repository:
+https://github.com/Daniel-Prado/CarND-Behavioral-Cloning-P3/tree/perspective
+
 I managed to get a model that worked perfectly well in Track 1 and partially in Track 2. However, the model did not improve the performance of the finally presented model with light pre-processing.  My guess is that this could be due to two reasons:
 * The perspective transform was well suited for Track 1, but not for the complex scenarios of Track 2, including different slope degrees.
 * The perspective transform introduced artifacts in the top part of the images, due to the low resolution of the input images, that could hinder the model.
