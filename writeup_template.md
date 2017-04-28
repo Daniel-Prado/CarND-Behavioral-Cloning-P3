@@ -1,8 +1,4 @@
-#**Behavioral Cloning** 
-
-##Writeup Template
-
-###You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
+# **Behavioral Cloning** 
 
 ---
 
@@ -27,90 +23,134 @@ The goals / steps of this project are the following:
 [image7]: ./examples/placeholder_small.png "Flipped Image"
 
 ## Rubric Points
-###Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.  
+Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.  
 
 ---
-###Files Submitted & Code Quality
+### Files Submitted & Code Quality
 
-####1. Submission includes all required files and can be used to run the simulator in autonomous mode
+#### 1. Submission includes all required files and can be used to run the simulator in autonomous mode
 
 My project includes the following files:
 * model.py containing the script to create and train the model
+* preprocess.py containing pre-processing routines.
 * drive.py for driving the car in autonomous mode
 * model.h5 containing a trained convolution neural network 
-* writeup_report.md or writeup_report.pdf summarizing the results
+* writeup_report.md summarizing the results
 
-####2. Submission includes functional code
+#### 2. Submission includes functional code
 Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing 
 ```sh
 python drive.py model.h5
 ```
+Note it may be necessary to adjust the driving speed inside the drive.py file, depending on the difficulty of the track. The default speed of 10 mph should work in Track 2 without issues.
 
-####3. Submission code is usable and readable
+I have commented the prints of the angle and throttle values at each iteration, in order to free the CPU from the printing load that can affect performance significally. Instead I printed the elapsed time between 100 iterations of the driving loop, that takes tipically about 4 seconds in my computer. This helps to check that the pre-processing of the driving loop does not hinder the performance.
 
+Apart from this, the only other modification in the provided drive.py file was to include the same pre-processing of the input images as used in the Training, which means:
+* Crop the images 65 pixels from the top and 20 pixels from the bottom.
+* Resize the cropped image to 64x64 pixels
+* Transform the colorspace from RGB to YUV*.
+
+YUV has worked better than RGB and HSV in my tests.
+
+With regard to preprocessing, probably here is the part of the project where I spent more time due to a variety of reasons:
+* First of all, I didn't realize until very late that the drive.py took the images from the simulator in RGB format. I was assuming that it was using BGR, as it used the training model, if using CV2.imwrite as shown in the video lessons. For this reasons all my initial attemps to make a fully working model were failing.
+***Suggestion*** : The video lesson should make a remark on this to avoid that future students loose many hours because of this.
+
+* I knew that ideally the preprocessing should be implemented within the KERAS model. 1st because that way you don't need to pre-process in python code (slow) in drive.py in realtime (which could lead to performance issues) and 2nd because KERAS should provide a more efficient implementation that eventually could take advantage of the GPU.
+However, my attemps to do so failed, it is not straightforward to implement a Lambda in Keras that uses OpenCV functions inside...
+* Finally, I wanted to try something 'original' for this project and I spent quite a lot of time trying a model than pre-processed the input images to transform them into a "bird-eye" view. This is discussed in section XXXXXXXXXXXXXXXX.
+
+
+
+#### 3. Submission code is usable and readable
+
+I have tried to present my code in a clear way, functionally-oriented (procedural) and including numerous comments.
+Most of the code is self-contained in the model.py file except some pre-processing functions included in preprocess.py.
 The model.py file contains the code for training and saving the convolution neural network. The file shows the pipeline I used for training and validating the model, and it contains comments to explain how the code works.
 
-###Model Architecture and Training Strategy
+### Model Architecture and Training Strategy
 
-####1. An appropriate model architecture has been employed
+#### 1. An appropriate model architecture has been employed
 
-My model consists of a convolution neural network with 3x3 filter sizes and depths between 32 and 128 (model.py lines 18-24) 
+My model is identical to the one proposed in NVIDIA paper xxxxxx, being the only difference the size of the input images.
+Besides of the suggested crop, I have highly reduced the size of the images, specially horizontally, resulting in a 64x64 size. The advantage of using this size is that it allows to use quite large training sets without the need of using a Generator.
 
-The model includes RELU layers to introduce nonlinearity (code line 20), and the data is normalized in the model using a Keras lambda layer (code line 18). 
+More details and considerations are presented in section "Solution Design Approach"
 
-####2. Attempts to reduce overfitting in the model
+#### 2. Attempts to reduce overfitting in the model
 
-The model contains dropout layers in order to reduce overfitting (model.py lines 21). 
+The model was trained and validated on a data set that I built by myself using both tracks in the simulator (more details in section 4.Appropiate Training Data), in order to avoid or reduce overfitting:
 
-The model was trained and validated on different data sets to ensure that the model was not overfitting (code line 10-16). The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
+In order to reduce overfitting I applied L2 Regularization. I applied it only to the FC layers, which means that only the weights of the FC layers are accounted in the Loss function.
+Initially I used a very reduced number of Epochs (3), but once I introduced L2 reg I could increase the Epochs to 5, that is what is implemented in the final model.
+I have removed 80% of the images with Steering Angle=0.0 in the case of central camera, or 0.0 +/-0.08 correction in the case of L and R cameras. Of course the removed images were randomly chosen using a uniform distribution.
 
-####3. Model parameter tuning
+I used Data Augmentation (see function augment_images in model.py line 115), that consisted of:
+* For every image, adding a horizontally flipped copy image (and corresponding flipped steering angle).
+* For every image (not belonging to the 0-steering angle group), I created N_MULTIPLY copies applying random shift traslation and random brightness reduction. The purpose was to reproduce more cases of roads with different degrees of shadow. (See functions shift_image and transf_brightness in lines 28 and 51 respectively).
 
-The model used an adam optimizer, so the learning rate was not tuned manually (model.py line 25).
+The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track. This has been tested as follows:
+* Track 1: the model is capable of driving autonomously for 1 full lap or more, even at high speeds (30 mph).
+* Track 2: the model is capable of driving autonomously for 1 full Lap or more. but only at low speeds (10 mph).
+NOTE: In my latest tests, and as it can be observed in the videos, the model seems to work even better in Track 2 than in Track 1 (despite being much easier and having more training data from Track 1)... This is due to the fact that in the last days I spent a lot of time tweaking the parameters to be able to complete Track 2... which in the other turn has decreassed the smoothness of Track 1.
+* Track 3: I have also tested the model in the 2nd track of the previous version of the Udacity simulator, which renders a mountain road. The model could run the car perfectly even at the highest speed of 30 mph, but only if I selected the "Fastest" video detail, that removes all shadows... Otherwise my model could not cope with the heavy dark shadows of the 1st turn.
+Nevertheless, I found the performance in this Track specially satisfying because it showed that **the model could generalize to a road where it had not been trained at all !!**
 
-####4. Appropriate training data
 
-Training data was chosen to keep the vehicle driving on the road. I used a combination of center lane driving, recovering from the left and right sides of the road ... 
+#### 3. Model parameter tuning
 
-For details about how I created the training data, see the next section. 
+The model used an adam optimizer, so the learning rate was not tuned manually.
 
-###Model Architecture and Training Strategy
+#### 4. Appropriate training data
 
-####1. Solution Design Approach
+Training data was chosen to keep the vehicle driving on the road. As explained before I made my own training data, importantly to mention, using the "Simple" level of video detail of the simulator. This is important because the "Simple" mode is not so simple compared to the Fast and Fastest model. because it includes a realistic rendering of object shadows.
+I could have built a model in a easier way by using "Fastest-video" training data that removes all shadows (and testing it the same way) but I wanted my model to be more realistic.
+To build the training set, I recorded driving as follows:
+* Training Mode - Drive Track 1 for 2 Laps,counter-clockwise, at medium speed (about 20mph).
+* Training Mode - Drive Track 1 for 1 Lap, clockwise, at medium speed (about 20mph).
+* Training Mode - Drive Track 2 for 1 Lap, clockwise, at low speed (about 10-15 mph).
 
-The overall strategy for deriving a model architecture was to ...
+The training dataset was not of very high quality, meaning that I was not very good at keep keeping in the middle part of the road, specially for Track 2 (I guess I am not a good videogame driver :-)
 
-My first step was to use a convolution neural network model similar to the ... I thought this model might be appropriate because ...
+Mostly, I used center lane driving, although I am not particularly brilliant at that, and this is why the car tends to take the curves not through the center.
 
-In order to gauge how well the model was working, I split my image and steering angle data into a training and validation set. I found that my first model had a low mean squared error on the training set but a high mean squared error on the validation set. This implied that the model was overfitting. 
+I didn't use "recovery driving" to teach the model to avoid running off the road.
 
-To combat the overfitting, I modified the model so that ...
+### Model Architecture and Training Strategy
 
-Then I ... 
+#### 1. Solution Design Approach
 
-The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle fell off the track... to improve the driving behavior in these cases, I ....
+As mentioned before I used the NVIDIA model proposed in the video lesson and explained in more detail in the following paper:
+https://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf
 
-At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road.
+A representation of this model by NVIDIA is shown in the following figure:
 
-####2. Final Model Architecture
 
-The final model architecture (model.py lines 18-24) consisted of a convolution neural network with the following layers and layer sizes ...
+I have tried numerous modifications of the NVIDIA model, namely:
+* Adding RELU or PreLU layers between the Fully-connected (FC) layers, or only some of the FC layers.
+* Adding DROPOUT between the FC layers or some of them, with different probability values (0.35, 0.50, 0.65...)
+* Adding DROPOUT after the 1st convolutional layer.
 
-Here is a visualization of the architecture (note: visualizing the architecture is optional according to the project rubric)
+Despite applying and testing these changes in a systematic controlled way, I have been unable to find a tweak that improves the performance of the original model.
+My guess is that introducing non-linearities in the FC layers does not work so well because this project is about predicting an angle, that is a continuous real value, and not a classification problem as in the previous project.
 
-![alt text][image1]
+The details about image pre-processing and normalization have already been discussed.
 
-####3. Creation of the Training Set & Training Process
+Once I corrected all the bugs (specially the RGB-BGR confussion previously mentioned), the car could drive well the Track 1 at almost the first try, using only the central camera. But when I tried the second track, it hit the walls or fell off the road after few curves. To make the model work in Track 2, I added the Left and Right cameras and I played with the correction angle parameters and with the parameters of the data augmentation (amount of multiplied data, degree of shifting and darkening...).
+Another way would have been to re-train the model recording only the spots where the vehicle fell off, but finally I didn't need to take that approach. The model was able to complete Track 2 with only 1 training lap in that circuit.
 
-To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving:
+
+
+#### 3. Creation of the Training Set & Training Process
+
+To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving, with the 3 cameras (L-C-R) in two segments of the two tracks:
 
 ![alt text][image2]
 
-I then recorded the vehicle recovering from the left side and right sides of the road back to center so that the vehicle would learn to .... These images show what a recovery looks like starting from ... :
+Below I show the result of the pre-processing (for brevity, I only show the pre-processing of the central camera images. Note also the the transformation from RGB to YUV colorspace is not shown here):
 
 ![alt text][image3]
-![alt text][image4]
-![alt text][image5]
 
 Then I repeated this process on track two in order to get more data points.
 
@@ -126,4 +166,4 @@ After the collection process, I had X number of data points. I then preprocessed
 
 I finally randomly shuffled the data set and put Y% of the data into a validation set. 
 
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate wasn't necessary.
+I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate 
