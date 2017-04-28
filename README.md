@@ -4,7 +4,7 @@
 #### Daniel Prado Rodriguez
 #### Feb'2017 Cohort
 
-See my writeup report [here](https://github.com/Daniel-Prado/CarND-Behavioral-Cloning-P3/blob/master/writeup_report.md)
+See my writeup report [here](https://github.com/Daniel-Prado/CarND-Behavioral-Cloning-P3/blob/master/writeup_template.md)
 
 Overview
 ---
