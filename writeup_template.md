@@ -74,7 +74,7 @@ The model.py file contains the code for training and saving the convolution neur
 
 #### 1. An appropriate model architecture has been employed
 
-My model is identical to the one proposed in NVIDIA paper xxxxxx, being the only difference the size of the input images.
+My model is identical to a  model proposed by NVIDIA, being the only difference the size of the input images.
 Besides of the suggested crop, I have highly reduced the size of the images, specially horizontally, resulting in a 64x64 size. The advantage of using this size is that it allows to use quite large training sets without the need of using a Generator.
 
 More details and considerations are presented in section "Solution Design Approach"
