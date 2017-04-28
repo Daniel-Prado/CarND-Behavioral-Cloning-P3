@@ -164,9 +164,7 @@ Below I show the result of the pre-processing (for brevity, I only show the pre-
 
 Then I repeated this process on track two in order to get more data points.
 
-To augment the data sat, I also flipped images and angles thinking that this would ... For example, here is an image that has then been flipped:
-
-![alt text][imagex]
+To augment the data sat, I also flipped images and steering angles. This ensures that the model will not have a bias to the left or the right.
 
 After data augmentation, I got a total of 124,396 images, 10% of which I used for validation.
 
