@@ -18,6 +18,7 @@ The goals / steps of this project are the following:
 [image2]: ./examples/Image_2.png "Pre-processing"
 [image3]: ./examples/Image_3.png "NVIDIA SDC Model"
 [image4]: ./examples/Image_4.png "Alternative Bird-Eye preprocessing"
+[image5]: ./examples/Image_5.png "Data Augmentation"
 
 
 ## Rubric Points
@@ -88,7 +89,9 @@ I have removed 80% of the images with Steering Angle=0.0 in the case of central 
 
 I used Data Augmentation (see function augment_images in model.py line 115), that consisted of:
 * For every image, adding a horizontally flipped copy image (and corresponding flipped steering angle).
-* For every image (not belonging to the 0-steering angle group), I created N\_MULTIPLY copies applying random shift traslation and random brightness reduction. The purpose was to reproduce more cases of roads with different degrees of shadow. (See functions shift\_image and transf_brightness in lines 28 and 51 respectively).
+* For every image (not belonging to the 0-steering angle group), I created N\_MULTIPLY copies applying random shift traslation and random brightness reduction. The purpose was to reproduce more cases of roads with different degrees of shadow. (See functions shift\_image and transf_brightness in lines 28 and 51 respectively). Below you can see the effect of these 2 functions in a training image:
+
+![alt text][image5]
 
 The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track. This has been tested as follows:
 * Track 1: the model is capable of driving autonomously for 1 full lap or more, even at high speeds (30 mph).
