@@ -99,6 +99,9 @@ The model was tested by running it through the simulator and ensuring that the v
 NOTE: In my latest tests, and as it can be observed in the videos, the model seems to work even better in Track 2 than in Track 1 (despite being much easier and having more training data from Track 1)... This is due to the fact that in the last days I spent a lot of time tweaking the parameters to be able to complete Track 2... which in the other turn has decreassed the smoothness of Track 1.
 Here you can see my Track 2 test video uploaded to youtube: https://youtu.be/uBrxG5xMy6k
 
+
+[![Video Track2 (Speed x2)](https://img.youtube.com/vi/uBrxG5xMy6k/0.jpg)](https://www.youtube.com/watch?v=uBrxG5xMy6k)
+
 * Track 3: I have also tested the model in the 2nd track of the previous version of the Udacity simulator, which renders a mountain road. The model could run the car perfectly even at the highest speed of 30 mph, but only if I selected the "Fastest" video detail, that removes all shadows... Otherwise my model could not cope with the heavy dark shadows of the 1st turn.
 Nevertheless, I found the performance in this Track specially satisfying because it showed that **the model could generalize to a road where it had not been trained at all !!**
 
