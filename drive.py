@@ -46,7 +46,7 @@ class SimplePIController:
 
 
 controller = SimplePIController(0.1, 0.002)
-set_speed = 20
+set_speed = 12
 controller.set_desired(set_speed)
 
 global iteraciones, start, lap
@@ -54,7 +54,7 @@ iteraciones = 0
 start =0
 lap=0
 
-from clone3 import resized, cropped
+from model import resized, cropped
 import time
 
 @sio.on('telemetry')
