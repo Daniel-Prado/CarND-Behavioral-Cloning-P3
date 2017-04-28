@@ -14,13 +14,11 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./examples/placeholder.png "Model Visualization"
-[image2]: ./examples/placeholder.png "Grayscaling"
-[image3]: ./examples/placeholder_small.png "Recovery Image"
-[image4]: ./examples/placeholder_small.png "Recovery Image"
-[image5]: ./examples/placeholder_small.png "Recovery Image"
-[image6]: ./examples/placeholder_small.png "Normal Image"
-[image7]: ./examples/placeholder_small.png "Flipped Image"
+[image1]: ./examples/Image_1.png "Training samples"
+[image2]: ./examples/Image_2.png "Pre-processing"
+[image3]: ./examples/Image_3.png "NVIDIA SDC Model"
+[image4]: ./examples/Image_4.png "Alternative Bird-Eye preprocessing"
+
 
 ## Rubric Points
 Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.  
@@ -130,6 +128,7 @@ https://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end
 
 A representation of this model by NVIDIA is shown in the following figure:
 
+![alt text][image3]
 
 I have tried numerous modifications of the NVIDIA model, namely:
 * Adding RELU or PreLU layers between the Fully-connected (FC) layers, or only some of the FC layers.
@@ -151,17 +150,17 @@ Another way would have been to re-train the model recording only the spots where
 To capture good driving behavior, I first recorded two laps on track one using center lane driving. Including the 3 cameras, my training set consisted of a total of 23085 images.
 Here is an example image of center lane driving, with the 3 cameras (L-C-R) in two segments of the two tracks:
 
-![alt text][image2]
+![alt text][image1]
 
 Below I show the result of the pre-processing (for brevity, I only show the pre-processing of the central camera images. Note also the the transformation from RGB to YUV colorspace is not shown here):
 
-![alt text][image3]
+![alt text][image2]
 
 Then I repeated this process on track two in order to get more data points.
 
 To augment the data sat, I also flipped images and angles thinking that this would ... For example, here is an image that has then been flipped:
 
-![alt text][image6]
+![alt text][imagex]
 
 After data augmentation, I got a total of 124,396 images, 10% of which I used for validation.
 
@@ -170,7 +169,7 @@ After data augmentation, I got a total of 124,396 images, 10% of which I used fo
 It is worth mentioning that I tried to implement a more "sofisticated" pre-processing consisting on applying a persperctive transform to the input images, in order to make the road look as a bird-eye image. Similarly as what is explained in the following Project 4 - Advanced Lane Find.
 My idea was that if I managed to make the curve more distinct and 'aparent' in the image, the model could learn more easily its shapes and extract more easily its features.
 
-![alt text][image7]
+![alt text][image4]
 I managed to get a model that worked perfectly well in Track 1 and partially in Track 2. However, the model did not improve the performance of the finally presented model with light pre-processing.  My guess is that this could be due to two reasons:
 * The perspective transform was well suited for Track 1, but not for the complex scenarios of Track 2, including different slope degrees.
 * The perspective transform introduced artifacts in the top part of the images, due to the low resolution of the input images, that could hinder the model.
