@@ -5,7 +5,8 @@
 Overview
 ---
 
-Here's the result of my model driving in Track 2!:
+Click to see the result of my model driving in Track 2!:
+
 [![Video Track2 (Speed x2)](https://img.youtube.com/vi/uBrxG5xMy6k/0.jpg)](https://www.youtube.com/watch?v=uBrxG5xMy6k)
 
 
